@@ -768,24 +768,19 @@
 <!-- ============================================ -->
 <script>
 // ============================================
-// CONFIGURACIÓN: 1 = CON LOADER (espera 2 segundos)
+// CONFIGURACIÓN: 1 = CON LOADER Y REDIRECCIÓN
 //                2 = SIN LOADER (muestra contenido inmediato)
 // ============================================
 var ACTIVAR_LOADER = 1;  // <--- CAMBIA AQUÍ ENTRE 1 o 2
 
-// ============================================
 // CAMBIA ESTA URL POR LA QUE QUIERAS
-var URL_REDIRECCION = "https://www.ejemplo.com";  // <--- PON AQUÍ TU LINK
+var URL_REDIRECCION = "https://www.google.com";  // <--- PON AQUÍ TU LINK
 
 if (ACTIVAR_LOADER === 1) {
     // Modo CON loader: espera 2 segundos y REDIRIGE
     setTimeout(function() {
-        window.location.href = URL_REDIRECCION;  // Esto redirige
+        window.location.href = URL_REDIRECCION;
     }, 2000);
-} else {
-    // Modo SIN loader: muestra el contenido inmediatamente
-    document.querySelector('.loader').style.display = 'none';
-    document.getElementById('contenidoEducativo').style.display = 'block';
 } else {
     // Modo SIN loader: oculta loader y muestra contenido inmediatamente
     document.querySelector('.loader').style.display = 'none';
