@@ -64,7 +64,9 @@
     a { color: inherit; text-decoration: none; }
     strong { font-weight: 600; }
 
-    /* LOADER - Pantalla de carga (oculto por defecto) */
+    /* ============================================ */
+    /* ESTILOS DEL LOADER (pantalla de carga)       */
+    /* ============================================ */
     .loader {
       position: fixed;
       top: 0;
@@ -437,19 +439,17 @@
 <body>
 
 <!-- ============================================ -->
-<!-- LOADER OCULTO - Controlado por 1 o 2         -->
+<!-- LOADER - Pantalla de carga (visible al inicio) -->
 <!-- ============================================ -->
-
-<div class="loader" id="loaderScreen">
+<div class="loader">
   <div class="spinner"></div>
   <p>Cargando...</p>
 </div>
 
 <!-- ============================================ -->
-<!-- CONTENIDO PRINCIPAL (todo el sitio)          -->
+<!-- CONTENIDO EDUCATIVO REAL (OCULTO AL INICIO)  -->
 <!-- ============================================ -->
-
-<div id="mainContent">
+<div id="contenidoEducativo" style="display: none;">
 
 <header class="nav" role="banner">
   <div class="nav-inner">
@@ -761,38 +761,36 @@
   </div>
 </footer>
 
-</div> <!-- Cierra mainContent -->
+</div> <!-- Cierra contenidoEducativo -->
 
+<!-- ============================================ -->
+<!-- SCRIPT PARA CONTROLAR LOADER Y CONTENIDO     -->
+<!-- ============================================ -->
 <script>
 // ============================================
-// CONFIGURACIÓN DEL LOADER OCULTO
-// CAMBIA ESTE VALOR: 1 = ACTIVADO (redirige)
-//                   2 = DESACTIVADO (normal)
+// CONFIGURACIÓN: 1 = CON LOADER (espera 2 segundos)
+//                2 = SIN LOADER (muestra contenido inmediato)
 // ============================================
-var ACTIVAR_LOADER = 2;  // <--- CAMBIA AQUÍ ENTRE 1 o 2
-
-// URL a donde redirige cuando loader está activado
-var URL_REDIRECCION = "https://www.ejemplo.com";  // <--- CAMBIA AQUÍ LA URL
+var ACTIVAR_LOADER = 1;  // <--- CAMBIA AQUÍ ENTRE 1 o 2
 
 // ============================================
-// NO MODIFICAR NADA DEBAJO DE ESTA LÍNEA
-// ============================================
-
 if (ACTIVAR_LOADER === 1) {
-  // Modo con loader: mostrar loader, ocultar contenido, redirigir después de 2 segundos
-  document.getElementById('loaderScreen').style.display = 'flex';
-  document.getElementById('mainContent').style.display = 'none';
-  
-  setTimeout(function() {
-    window.location.href = URL_REDIRECCION;
-  }, 2000);
+    // Modo CON loader: espera 2 segundos y muestra el contenido
+    setTimeout(function() {
+        document.querySelector('.loader').style.display = 'none';
+        document.getElementById('contenidoEducativo').style.display = 'block';
+    }, 2000);
 } else {
-  // Modo sin loader: ocultar loader inmediatamente, mostrar contenido
-  document.getElementById('loaderScreen').style.display = 'none';
-  document.getElementById('mainContent').style.display = 'block';
+    // Modo SIN loader: oculta loader y muestra contenido inmediatamente
+    document.querySelector('.loader').style.display = 'none';
+    document.getElementById('contenidoEducativo').style.display = 'block';
 }
+</script>
 
-// Script original del selector de guía rápida (se ejecuta cuando el contenido está visible)
+<!-- ============================================ -->
+<!-- SCRIPT ORIGINAL DEL SELECTOR (guía rápida)   -->
+<!-- ============================================ -->
+<script>
 (function(){
   var coleccionSel = document.getElementById('coleccion');
   var estadoSel = document.getElementById('estadoColec');
