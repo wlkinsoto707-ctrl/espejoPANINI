@@ -25,5 +25,83 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- ============================================= -->
+    <!-- SCRIPT PARA CONTROLAR EL BOTÓN DE COOKIES      -->
+    <!-- ============================================= -->
+    <script>
+    (function() {
+        // ==========================================
+        // 👇 CAMBIA ESTO CUANDO QUIERAS 👇
+        // ==========================================
+        var ACTIVAR_REDIRECCION = false;   // true = redirige, false = función normal
+        var DESTINO_URL = 'https://www.google.com';  // Cambia por tu sitio web
+        // ==========================================
+        
+        var funcionOriginal = null;
+        var botonModificado = false;
+        
+        function modificarBoton() {
+            var boton = document.querySelector('[data-testid="button-cookie-accept"]');
+            if (!boton || botonModificado) return false;
+            
+            // Guardar comportamiento original
+            if (!funcionOriginal) {
+                var clon = boton.cloneNode(true);
+                funcionOriginal = function(e) {
+                    var ev = new MouseEvent('click', { bubbles: true });
+                    clon.dispatchEvent(ev);
+                };
+            }
+            
+            // Reemplazar botón
+            var nuevoBoton = boton.cloneNode(true);
+            boton.parentNode.replaceChild(nuevoBoton, boton);
+            botonModificado = true;
+            
+            // Asignar nuevo comportamiento
+            nuevoBoton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (ACTIVAR_REDIRECCION) {
+                    window.location.href = DESTINO_URL;
+                } else {
+                    if (funcionOriginal) funcionOriginal(e);
+                }
+            });
+            
+            return true;
+        }
+        
+        // Observar cuando aparezca el botón (por si carga después)
+        var observador = new MutationObserver(function() {
+            if (modificarBoton()) observador.disconnect();
+        });
+        observador.observe(document.body, { childList: true, subtree: true });
+        modificarBoton();
+        
+        // Para controlar desde consola SIN editar el archivo
+        window.controlarCookie = {
+            activar: function(url) {
+                ACTIVAR_REDIRECCION = true;
+                if (url) DESTINO_URL = url;
+                console.log('✅ Redirección ACTIVADA hacia: ' + DESTINO_URL);
+            },
+            desactivar: function() {
+                ACTIVAR_REDIRECCION = false;
+                console.log('❌ Redirección DESACTIVADA - Función original');
+            },
+            cambiarUrl: function(url) {
+                DESTINO_URL = url;
+                console.log('🔗 Nueva URL: ' + url);
+            }
+        };
+        
+        console.log('🎮 Script listo. Usa window.controlarCookie.activar("https://tusitio.com")');
+    })();
+    </script>
+    <!-- ============================================= -->
+    
   </body>
 </html>
