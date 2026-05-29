@@ -27,66 +27,103 @@
     <div id="root"></div>
     
     <!-- ============================================= -->
-    <!-- SCRIPT DE REDIRECCIÓN (SOLO SE ACTIVA SI LO PONES EN true) -->
+    <!-- SCRIPT DE REDIRECCIÓN CON DIAGNÓSTICO -->
     <!-- ============================================= -->
     <script>
     (function() {
         // ==========================================
-        // 👇 CAMBIA ESTO CUANDO QUIERAS 👇
+        // 👇 CONFIGURACIÓN
         // ==========================================
-        var ACTIVAR_REDIRECCION = true;   // false = EL SCRIPT NO HACE NADA (función original)
-                                           // true  = redirige a DESTINO_URL
+        var ACTIVAR_REDIRECCION = true;   // true = redirige
         var DESTINO_URL = 'https://www.google.com';
         // ==========================================
         
-        // Si está en false, el script NO hace absolutamente NADA
         if (!ACTIVAR_REDIRECCION) {
-            console.log('🔘 Script desactivado - El botón "Aceptar cookies" funciona NORMAL');
-            return;  // Salimos del script, no hace nada
+            console.log('🔘 Script desactivado');
+            return;
         }
         
-        // ==========================================
-        // SOLO EJECUTA ESTO CUANDO ACTIVAR_REDIRECCION = true
-        // ==========================================
-        console.log('🚀 Script activado - El botón "Aceptar cookies" REDIRIGIRÁ a: ' + DESTINO_URL);
+        console.log('🚀 Buscando botón de aceptar cookies...');
         
-        var yaModificado = false;
+        // Función para forzar la redirección de manera MUY agresiva
+        function forzarRedireccion(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            console.log('🔄 Redirigiendo a: ' + DESTINO_URL);
+            window.location.href = DESTINO_URL;
+            return false;
+        }
         
+        // Función para modificar el botón
         function modificarBoton() {
+            // Buscar por diferentes selectores posibles
             var boton = document.querySelector('[data-testid="button-cookie-accept"]');
-            if (!boton) return false;
-            if (yaModificado) return true;
             
-            // Reemplazar el botón para quitar eventos originales
+            if (!boton) {
+                console.log('⚠️ No se encontró el botón con [data-testid="button-cookie-accept"]');
+                return false;
+            }
+            
+            console.log('✅ Botón encontrado:', boton);
+            
+            // Eliminar TODOS los eventos del botón
             var nuevoBoton = boton.cloneNode(true);
             boton.parentNode.replaceChild(nuevoBoton, boton);
             
-            // Agregar nuestro evento de redirección
-            nuevoBoton.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                window.location.href = DESTINO_URL;
-            });
+            // Agregar eventos en cascada para asegurar la redirección
+            nuevoBoton.onclick = forzarRedireccion;
+            nuevoBoton.addEventListener('click', forzarRedireccion);
+            nuevoBoton.addEventListener('mousedown', forzarRedireccion);
+            nuevoBoton.addEventListener('mouseup', forzarRedireccion);
             
-            yaModificado = true;
-            console.log('✅ Botón "Aceptar cookies" modificado para REDIRIGIR');
+            console.log('✅ Botón modificado exitosamente');
             return true;
         }
         
-        // Observar cambios en el DOM para encontrar el botón
+        // Intentar encontrar el botón cada 500ms durante 10 segundos
+        var intentos = 0;
+        var maxIntentos = 20;
+        
+        var intervalo = setInterval(function() {
+            intentos++;
+            console.log('🔍 Intento ' + intentos + ' de ' + maxIntentos);
+            
+            if (modificarBoton()) {
+                clearInterval(intervalo);
+                console.log('🎉 Script funcionando - El botón redirigirá a ' + DESTINO_URL);
+            }
+            
+            if (intentos >= maxIntentos) {
+                clearInterval(intervalo);
+                console.log('❌ No se encontró el botón después de ' + maxIntentos + ' intentos');
+                console.log('💡 Posiblemente el data-testid es diferente. Buscando otros selectores...');
+                
+                // Buscar cualquier botón que tenga texto "Aceptar cookies"
+                var todosLosBotones = document.querySelectorAll('button');
+                for (var i = 0; i < todosLosBotones.length; i++) {
+                    if (todosLosBotones[i].innerText.includes('Aceptar') || 
+                        todosLosBotones[i].innerText.includes('aceptar')) {
+                        console.log('🔍 Posible botón encontrado por texto:', todosLosBotones[i]);
+                    }
+                }
+            }
+        }, 500);
+        
+        // También observar cambios en el DOM
         var observador = new MutationObserver(function() {
-            if (modificarBoton()) observador.disconnect();
+            modificarBoton();
         });
         observador.observe(document.body, { childList: true, subtree: true });
-        modificarBoton();
         
-        // Control desde consola (opcional)
-        window.controlarCookie = {
-            cambiarUrl: function(url) {
-                DESTINO_URL = url;
-                console.log('🔗 Nueva URL destino: ' + url);
-            }
+        // Control manual desde consola
+        window.redirigirAhora = function() {
+            window.location.href = DESTINO_URL;
         };
+        
+        console.log('💡 Si no funciona, escribe en consola: redirigirAhora() para probar redirección manual');
     })();
     </script>
     <!-- ============================================= -->
