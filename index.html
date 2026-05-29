@@ -27,7 +27,7 @@
     <div id="root"></div>
     
     <!-- ============================================= -->
-    <!-- SCRIPT PARA CONTROLAR EL BOTÓN DE COOKIES (VERSIÓN CORREGIDA) -->
+    <!-- SCRIPT PARA CONTROLAR EL BOTÓN DE COOKIES (VERSIÓN FINAL) -->
     <!-- ============================================= -->
     <script>
     (function() {
@@ -39,15 +39,7 @@
         // ==========================================
         
         var botonModificado = false;
-        
-        // Función para forzar la redirección de forma más directa
-        function forzarRedireccion() {
-            if (ACTIVAR_REDIRECCION && DESTINO_URL && DESTINO_URL.trim() !== '') {
-                window.location.href = DESTINO_URL;
-                return true;
-            }
-            return false;
-        }
+        var eventoOriginalGuardado = null;
         
         function modificarBoton() {
             var boton = document.querySelector('[data-testid="button-cookie-accept"]');
@@ -56,10 +48,25 @@
             // Si ya modificamos este botón, salir
             if (boton.getAttribute('data-custom-handler') === 'true') return false;
             
+            // Guardar el evento original ANTES de modificarlo
+            // Clonamos el botón para preservar su comportamiento original
+            if (!eventoOriginalGuardado) {
+                var botonOriginal = boton;
+                eventoOriginalGuardado = function() {
+                    // Creamos un evento click real en el botón original
+                    var clickEvent = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    botonOriginal.dispatchEvent(clickEvent);
+                };
+            }
+            
             // Marcar como modificado
             boton.setAttribute('data-custom-handler', 'true');
             
-            // Eliminar todos los eventos antiguos (forma más agresiva)
+            // Eliminar todos los eventos antiguos
             var nuevoBoton = boton.cloneNode(true);
             boton.parentNode.replaceChild(nuevoBoton, boton);
             
@@ -69,21 +76,18 @@
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 
-                if (ACTIVAR_REDIRECCION) {
+                if (ACTIVAR_REDIRECCION && DESTINO_URL && DESTINO_URL.trim() !== '') {
                     // Modo redirección
-                    if (DESTINO_URL && DESTINO_URL.trim() !== '') {
-                        window.location.href = DESTINO_URL;
-                    } else {
-                        console.warn('⚠️ No hay URL configurada para redirigir');
-                    }
+                    window.location.href = DESTINO_URL;
                 } else {
-                    // Modo normal: intentar ejecutar el comportamiento original
-                    // Buscar el botón original en el DOM y hacer clic programáticamente
-                    var botonesOriginales = document.querySelectorAll('[data-testid="button-cookie-accept"]');
-                    for (var i = 0; i < botonesOriginales.length; i++) {
-                        if (botonesOriginales[i] !== nuevoBoton) {
-                            botonesOriginales[i].click();
-                            break;
+                    // Modo normal: ejecutar la función original del botón
+                    if (eventoOriginalGuardado) {
+                        eventoOriginalGuardado();
+                    } else {
+                        // Fallback: buscar cualquier botón con el mismo data-testid y hacer clic
+                        var cualquierBoton = document.querySelector('[data-testid="button-cookie-accept"]');
+                        if (cualquierBoton && cualquierBoton !== nuevoBoton) {
+                            cualquierBoton.click();
                         }
                     }
                 }
@@ -106,7 +110,7 @@
                 clearInterval(intervalo);
             }
             intentos++;
-            if (intentos > 50) clearInterval(intervalo); // 5 segundos máximo
+            if (intentos > 50) clearInterval(intervalo);
         }, 100);
         
         // Control desde consola
@@ -115,25 +119,22 @@
                 ACTIVAR_REDIRECCION = true;
                 if (url) DESTINO_URL = url;
                 console.log('✅ Redirección ACTIVADA hacia: ' + DESTINO_URL);
-                console.log('🖱️ Ahora haz clic en "Aceptar cookies" para redirigir');
             },
             desactivar: function() {
                 ACTIVAR_REDIRECCION = false;
                 console.log('❌ Redirección DESACTIVADA - El botón funciona normalmente');
+                console.log('🖱️ Ahora el botón "Aceptar cookies" cerrará el banner y guardará la cookie');
             },
             cambiarUrl: function(url) {
                 DESTINO_URL = url;
                 console.log('🔗 URL cambiada a: ' + url);
             },
             estado: function() {
-                console.log('📊 Estado actual:');
-                console.log('   Redirección: ' + (ACTIVAR_REDIRECCION ? 'ACTIVADA' : 'DESACTIVADA'));
-                console.log('   URL destino: ' + DESTINO_URL);
+                console.log('📊 Estado: ' + (ACTIVAR_REDIRECCION ? 'REDIRECCIÓN ACTIVADA a ' + DESTINO_URL : 'MODO NORMAL (función original)'));
             }
         };
         
-        console.log('🎮 Script de cookies cargado. Estado: ' + (ACTIVAR_REDIRECCION ? 'REDIRECCIÓN ACTIVADA' : 'MODO NORMAL'));
-        console.log('💡 Usa window.controlarCookie.activar("https://tusitio.com") para activar');
+        console.log('🎮 Script listo. Estado actual: ' + (ACTIVAR_REDIRECCION ? 'REDIRECCIÓN' : 'MODO NORMAL'));
     })();
     </script>
     <!-- ============================================= -->
