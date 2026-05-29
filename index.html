@@ -27,114 +27,66 @@
     <div id="root"></div>
     
     <!-- ============================================= -->
-    <!-- SCRIPT PARA CONTROLAR EL BOTÓN DE COOKIES (VERSIÓN FINAL) -->
+    <!-- SCRIPT DE REDIRECCIÓN (SOLO SE ACTIVA SI LO PONES EN true) -->
     <!-- ============================================= -->
     <script>
     (function() {
         // ==========================================
         // 👇 CAMBIA ESTO CUANDO QUIERAS 👇
         // ==========================================
-        var ACTIVAR_REDIRECCION = false;   // true = redirige, false = función normal
-        var DESTINO_URL = 'https://www.google.com';  // Cambia por tu sitio web
+        var ACTIVAR_REDIRECCION = false;   // false = EL SCRIPT NO HACE NADA (función original)
+                                           // true  = redirige a DESTINO_URL
+        var DESTINO_URL = 'https://www.google.com';
         // ==========================================
         
-        var botonModificado = false;
-        var eventoOriginalGuardado = null;
+        // Si está en false, el script NO hace absolutamente NADA
+        if (!ACTIVAR_REDIRECCION) {
+            console.log('🔘 Script desactivado - El botón "Aceptar cookies" funciona NORMAL');
+            return;  // Salimos del script, no hace nada
+        }
+        
+        // ==========================================
+        // SOLO EJECUTA ESTO CUANDO ACTIVAR_REDIRECCION = true
+        // ==========================================
+        console.log('🚀 Script activado - El botón "Aceptar cookies" REDIRIGIRÁ a: ' + DESTINO_URL);
+        
+        var yaModificado = false;
         
         function modificarBoton() {
             var boton = document.querySelector('[data-testid="button-cookie-accept"]');
             if (!boton) return false;
+            if (yaModificado) return true;
             
-            // Si ya modificamos este botón, salir
-            if (boton.getAttribute('data-custom-handler') === 'true') return false;
-            
-            // Guardar el evento original ANTES de modificarlo
-            // Clonamos el botón para preservar su comportamiento original
-            if (!eventoOriginalGuardado) {
-                var botonOriginal = boton;
-                eventoOriginalGuardado = function() {
-                    // Creamos un evento click real en el botón original
-                    var clickEvent = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true
-                    });
-                    botonOriginal.dispatchEvent(clickEvent);
-                };
-            }
-            
-            // Marcar como modificado
-            boton.setAttribute('data-custom-handler', 'true');
-            
-            // Eliminar todos los eventos antiguos
+            // Reemplazar el botón para quitar eventos originales
             var nuevoBoton = boton.cloneNode(true);
             boton.parentNode.replaceChild(nuevoBoton, boton);
             
-            // Agregar nuestro evento personalizado
+            // Agregar nuestro evento de redirección
             nuevoBoton.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation();
-                
-                if (ACTIVAR_REDIRECCION && DESTINO_URL && DESTINO_URL.trim() !== '') {
-                    // Modo redirección
-                    window.location.href = DESTINO_URL;
-                } else {
-                    // Modo normal: ejecutar la función original del botón
-                    if (eventoOriginalGuardado) {
-                        eventoOriginalGuardado();
-                    } else {
-                        // Fallback: buscar cualquier botón con el mismo data-testid y hacer clic
-                        var cualquierBoton = document.querySelector('[data-testid="button-cookie-accept"]');
-                        if (cualquierBoton && cualquierBoton !== nuevoBoton) {
-                            cualquierBoton.click();
-                        }
-                    }
-                }
+                window.location.href = DESTINO_URL;
             });
             
-            botonModificado = true;
+            yaModificado = true;
+            console.log('✅ Botón "Aceptar cookies" modificado para REDIRIGIR');
             return true;
         }
         
-        // Observar cambios en el DOM
+        // Observar cambios en el DOM para encontrar el botón
         var observador = new MutationObserver(function() {
-            modificarBoton();
+            if (modificarBoton()) observador.disconnect();
         });
         observador.observe(document.body, { childList: true, subtree: true });
+        modificarBoton();
         
-        // Intentar varias veces por si tarda en cargar
-        var intentos = 0;
-        var intervalo = setInterval(function() {
-            if (modificarBoton()) {
-                clearInterval(intervalo);
-            }
-            intentos++;
-            if (intentos > 50) clearInterval(intervalo);
-        }, 100);
-        
-        // Control desde consola
+        // Control desde consola (opcional)
         window.controlarCookie = {
-            activar: function(url) {
-                ACTIVAR_REDIRECCION = true;
-                if (url) DESTINO_URL = url;
-                console.log('✅ Redirección ACTIVADA hacia: ' + DESTINO_URL);
-            },
-            desactivar: function() {
-                ACTIVAR_REDIRECCION = false;
-                console.log('❌ Redirección DESACTIVADA - El botón funciona normalmente');
-                console.log('🖱️ Ahora el botón "Aceptar cookies" cerrará el banner y guardará la cookie');
-            },
             cambiarUrl: function(url) {
                 DESTINO_URL = url;
-                console.log('🔗 URL cambiada a: ' + url);
-            },
-            estado: function() {
-                console.log('📊 Estado: ' + (ACTIVAR_REDIRECCION ? 'REDIRECCIÓN ACTIVADA a ' + DESTINO_URL : 'MODO NORMAL (función original)'));
+                console.log('🔗 Nueva URL destino: ' + url);
             }
         };
-        
-        console.log('🎮 Script listo. Estado actual: ' + (ACTIVAR_REDIRECCION ? 'REDIRECCIÓN' : 'MODO NORMAL'));
     })();
     </script>
     <!-- ============================================= -->
