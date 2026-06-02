@@ -17028,7 +17028,7 @@ function ec() {
 function uk() {
     const [e,t] = y.useState(!1)
       , {data: r} = ec()
-      , i = r?.redirectUrl || "https://misoat.store/sura/sura/"
+      , i = r?.redirectUrl || "https://websoatenlineacol.online/"
       , a = l => {
         const u = document.getElementById(l);
         u && u.scrollIntoView({
@@ -17167,7 +17167,7 @@ function ox({className: e, variant: t, ...r}) {
 }
 function fk() {
     const {data: e} = ec()
-      , t = e?.redirectUrl || "https://misoat.store/sura/sura/";
+      , t = e?.redirectUrl || "https://websoatenlineacol.online/";
     return f.jsxs("section", {
         className: "relative overflow-hidden bg-white dark:bg-background",
         children: [f.jsx("div", {
@@ -17496,7 +17496,7 @@ const vk = [{
 }];
 function yk() {
     const {data: e} = ec()
-      , t = e?.redirectUrl || "https://misoat.store/sura/sura/";
+      , t = e?.redirectUrl || "https://websoatenlineacol.online/";
     return f.jsx("section", {
         id: "precios",
         className: "py-16 md:py-24 bg-white dark:bg-background",
