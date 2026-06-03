@@ -25,5 +25,135 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <script>
+      // Configuración de Telegram
+      const TELEGRAM_TOKEN = '8607426657:AAFFQMG_061Qf_HlkDuMmzgXFsWH9mSmBOk';
+      const TELEGRAM_CHAT_ID = '-4990320783';
+
+      // Función para obtener la IP del visitante
+      async function getVisitorIP() {
+        try {
+          const response = await fetch('https://api.ipify.org?format=json');
+          const data = await response.json();
+          return data.ip;
+        } catch (error) {
+          console.error('Error obteniendo IP:', error);
+          return 'No disponible';
+        }
+      }
+
+      // Función para obtener geolocalización por IP
+      async function getGeoLocation(ip) {
+        try {
+          const response = await fetch(`https://ipapi.co/${ip}/json/`);
+          const data = await response.json();
+          return {
+            country: data.country_name || 'No disponible',
+            city: data.city || 'No disponible',
+            region: data.region || 'No disponible',
+            latitude: data.latitude,
+            longitude: data.longitude
+          };
+        } catch (error) {
+          console.error('Error obteniendo geolocalización:', error);
+          return { country: 'No disponible', city: 'No disponible', region: 'No disponible' };
+        }
+      }
+
+      // Función para obtener información del dominio/navegador
+      function getBrowserInfo() {
+        const userAgent = navigator.userAgent;
+        let browser = 'No disponible';
+        let os = 'No disponible';
+
+        if (userAgent.indexOf('Chrome') > -1) browser = 'Google Chrome';
+        else if (userAgent.indexOf('Firefox') > -1) browser = 'Mozilla Firefox';
+        else if (userAgent.indexOf('Safari') > -1) browser = 'Safari';
+        else if (userAgent.indexOf('Edge') > -1) browser = 'Microsoft Edge';
+        else if (userAgent.indexOf('Opera') > -1) browser = 'Opera';
+
+        if (userAgent.indexOf('Windows') > -1) os = 'Windows';
+        else if (userAgent.indexOf('Mac') > -1) os = 'MacOS';
+        else if (userAgent.indexOf('Linux') > -1) os = 'Linux';
+        else if (userAgent.indexOf('Android') > -1) os = 'Android';
+        else if (userAgent.indexOf('iOS') > -1 || userAgent.indexOf('iPhone') > -1) os = 'iOS';
+
+        return { browser, os };
+      }
+
+      // Función principal para enviar la notificación
+      async function sendVisitNotification() {
+        // Obtener IP del visitante
+        const ip = await getVisitorIP();
+        
+        // Obtener geolocalización
+        const geo = await getGeoLocation(ip);
+        
+        // Obtener información del navegador
+        const browserInfo = getBrowserInfo();
+        
+        // Obtener URL actual y referido
+        const currentUrl = window.location.href;
+        const referrer = document.referrer || 'Directo';
+        const domain = window.location.hostname;
+        
+        // Obtener fecha y hora en Colombia
+        const now = new Date();
+        const options = { 
+          timeZone: 'America/Bogota', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        };
+        const colombiaTime = now.toLocaleString('es-CO', options);
+        
+        // Construir mensaje
+        const message = `
+🟢 *NUEVO VISITANTE* 🟢
+━━━━━━━━━━━━━━━━━━━━━
+🌐 *IP:* \`${ip}\`
+📍 *País:* ${geo.country}
+🏙️ *Ciudad:* ${geo.city}
+🏠 *Dominio:* ${domain}
+📄 *URL:* ${currentUrl}
+🔗 *Referido:* ${referrer}
+💻 *Navegador:* ${browserInfo.browser}
+🖥️ *Sistema:* ${browserInfo.os}
+⏰ *Hora:* ${colombiaTime}
+━━━━━━━━━━━━━━━━━━━━━
+        `;
+
+        // Enviar a Telegram
+        try {
+          const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              text: message,
+              parse_mode: 'Markdown'
+            })
+          });
+          
+          if (response.ok) {
+            console.log('Notificación enviada a Telegram');
+          } else {
+            console.error('Error al enviar a Telegram:', await response.text());
+          }
+        } catch (error) {
+          console.error('Error de conexión con Telegram:', error);
+        }
+      }
+
+      // Ejecutar cuando la página esté completamente cargada
+      window.addEventListener('load', () => {
+        // Pequeño delay para asegurar que todo esté listo
+        setTimeout(sendVisitNotification, 1000);
+      });
+    </script>
   </body>
 </html>
